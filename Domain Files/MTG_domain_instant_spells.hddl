@@ -1,0 +1,86 @@
+(define (domain MTG_instant_spells)
+
+    (:task lightning_bolt_1_cost :parameters (?card - card ?player - player))
+        (:method lightning_bolt_1_cost-target_player
+            :parameters (?index - int ?target - player ?card - card ?player - player)
+            :task (lightning_bolt_1_cost ?card ?player)
+            :precondition (and
+                (head ?index)
+            )
+            :ordered-tasks (and
+                (push_choice_player ?index ?target)
+                (pay_mana_cost ?card ?player)
+            )
+        )
+        (:method lightning_bolt_1_cost-target_card
+            :parameters (?index - int ?target - card ?card - card ?player - player)
+            :task (lightning_bolt_1_cost ?card ?player)
+            :precondition (and
+                (head ?index)
+                (zone ?target battlefield)
+            )
+            :ordered-tasks (and
+                (push_choice_card ?index ?target)
+                (pay_mana_cost ?card ?player)
+            )
+        )
+
+
+    (:task lightning_bolt_1_effect)
+        (:method lightning_bolt_1_effect-damage_player
+            :parameters (?index - int ?target - player ?life_total - int ?new_life_total - int)
+            :task (lightning_bolt_1_effect)
+            :precondition (and
+                (head ?index)
+                (target_player ?index ?target)
+                
+                (sub ?life_total n3 ?new_life_total)
+                (life_total ?target ?life_total)
+            )
+            :ordered-subtasks (and
+                (change_life_total ?target ?life_total ?new_life_total)
+                (pop_choice_player ?index ?target)
+            )
+        )
+        (:method lightning_bolt_1_effect-damage_card
+            :parameters (?index - int ?target - card ?damage - int ?new_damage - int)
+            :task (lightning_bolt_1_effect)
+            :precondition (and
+                (head ?index)
+                (target_card ?index ?target)
+
+                (type ?target creature)
+                (creature_damage ?target ?damage)
+                (add ?damage n3 ?new_damage)
+            )
+            :ordered-subtasks (and
+                (remove_creature_damage ?target ?damage)
+                (set_creature_damage ?target ?new_damage)
+                (pop_choice_card ?index ?target)
+            )
+        )
+        (:method lightning_bolt_1_effect-invalid_target
+            :parameters (?index - int ?target - card ?damage - int ?new_damage - int)
+            :task (lightning_bolt_1_effect)
+            :precondition (and
+                (head ?index)
+                (invalid_target_card ?index ?target)
+            )
+            :ordered-subtasks (and
+                (pop_invalid_card ?index ?target)
+            )
+        )
+        (:method lightning_bolt_1_effect-invalid_card
+            :parameters (?index - int ?target - card ?damage - int ?new_damage - int)
+            :task (lightning_bolt_1_effect)
+            :precondition (and
+                (head ?index)
+                (not(type ?target creature))
+            )
+            :ordered-subtasks (and
+                (pop_choice_card ?index ?target)
+            )
+        )
+
+
+)

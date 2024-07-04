@@ -1,0 +1,289 @@
+(define (domain MTG_turn_based)
+
+    (:task clear_mana_pools)
+        (:method clear_mana_pools-done
+            :parameters (?counter - int)
+            :task (clear_mana_pools)
+            :precondition (and
+                (counter ?counter)
+                (player_count ?counter)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter n0)
+            )
+        )
+        (:method clear_mana_pools-clear_mana_pool_player
+            :parameters (?player - player ?next_player - player ?counter - int ?new_counter - int)
+            :task (clear_mana_pools)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+                
+                (current_player ?player)
+                (linked_player ?player ?next_player)
+            )
+            :ordered-subtasks (and
+                ; (clear_mana_pool_player_color ?player white)
+                ; (clear_mana_pool_player_color ?player blue)
+                ; (clear_mana_pool_player_color ?player black)
+                ; (clear_mana_pool_player_color ?player red)
+                ; (clear_mana_pool_player_color ?player green)
+                ; (clear_mana_pool_player_color ?player colorless)
+                ; (clear_mana_pool_player_color ?player snow)
+                (clear_mana_pool_player ?player)
+
+                (change_counter ?counter ?new_counter)
+                (change_current_player ?player ?next_player)
+                (clear_mana_pools)
+            )
+        )
+
+    (:task clear_mana_pool_player_color :parameters (?player - player ?color - color))
+        (:method clear_mana_pool_player_color-clear
+            :parameters (?player - player ?color - color ?value - int)
+            :task (clear_mana_pool_player_color ?player ?color)
+            :precondition (and
+                (mana_pool ?player ?color ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_pool ?player ?color ?value)
+                (set_mana_pool ?player ?color n0)
+            )
+        )
+
+    (:task clear_mana_pool_player :parameters (?player - player))
+        (:method clear_mana_pool_player-done
+            :parameters (?player - player)
+            :task (clear_mana_pool_player ?player)
+            :precondition (and
+                (mana_pool ?player white n0)
+                (mana_pool ?player blue n0)
+                (mana_pool ?player black n0)
+                (mana_pool ?player red n0)
+                (mana_pool ?player green n0)
+                (mana_pool ?player colorless n0)
+                (mana_pool ?player snow n0)
+            )
+            :ordered-subtasks ()
+        )
+        (:method clear_mana_pool_player-clear_pool
+            :parameters (?player - player ?color - color ?value - int)
+            :task (clear_mana_pool_player ?player)
+            :precondition (and
+                (mana_pool ?player ?color ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_pool ?player ?color ?value)
+                (set_mana_pool ?player ?color n0)
+                (clear_mana_pool_player ?player)
+            )
+        )
+
+
+    (:task clear_creature_damage)
+        (:method clear_creature_damage-done
+            :parameters (?counter - int)
+            :task (clear_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (card_count ?counter)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter n0)
+            )
+        )
+        (:method clear_creature_damage-clear_damage
+            :parameters (?card - card ?next_card - card ?value - int ?counter - int ?new_counter - int)
+            :task (clear_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (creature_damage ?card ?value)
+                (type ?card creature)
+                (zone ?card battlefield)
+            )
+            :ordered-subtasks (and
+                (remove_creature_damage ?card ?value)
+                (set_creature_damage ?card n0)
+                
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (clear_creature_damage)
+            )
+        )
+        (:method clear_creature_damage-mark_checked_no_creature
+            :parameters (?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task (clear_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(type ?card creature))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (clear_creature_damage)
+            )
+        )
+        (:method clear_creature_damage-mark_checked_no_battlefield
+            :parameters (?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task (clear_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(zone ?card battlefield))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (clear_creature_damage)
+            )
+        )
+
+
+    (:task untap_permanents)
+        (:method untap_permanents-done_checking
+            :parameters (?counter - int)
+            :task (untap_permanents)
+            :precondition (and
+                (card_count ?counter)
+                (counter ?counter)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter n0)
+            )
+        )
+        (:method untap_permanents-untap_card
+            :parameters (?card - card ?next_card - card ?player - player ?counter - int ?new_counter - int)
+            :task (untap_permanents)
+            :precondition(and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (zone ?card battlefield)
+                (active_player ?player)
+                (control ?card ?player)
+                (tapped ?card)
+            )
+            :ordered-subtasks(and
+                (untap_permanent ?card)
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (untap_permanents)
+            )
+        )
+        (:method untap_permanents-not_battlefield
+            :parameters (?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task (untap_permanents)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(zone ?card battlefield))
+            )
+            :ordered-subtasks(and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (untap_permanents)
+            )
+        )
+        (:method untap_permanents-not_controlled
+            :parameters (?card - card ?next_card - card ?player - player ?counter - int ?new_counter - int)
+            :task (untap_permanents)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (active_player ?player)
+                (not(control ?card ?player))
+            )
+            :ordered-subtasks(and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (untap_permanents)
+            )
+        )
+        (:method untap_permanents-not_tapped
+            :parameters (?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task (untap_permanents)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (untapped ?card)
+            )
+            :ordered-subtasks(and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (untap_permanents)
+            )
+        )
+
+
+
+    (:task remove_main_phase_done)
+        (:method remove_main_phase_done-remove
+            :parameters ()
+            :task (remove_main_phase_done)
+            :precondition (and
+                (main_phase_done)
+            )
+            :ordered-subtasks (and
+                (remove_flag_main_phase_done)
+            )
+        )
+        (:method remove_main_phase_done-pass
+            :parameters ()
+            :task (remove_main_phase_done)
+            :precondition (and
+                (not(main_phase_done))
+            )
+            :ordered-subtasks (and
+            )
+        )
+    
+    (:task remove_land_played)
+        (:method remove_land_played-remove
+            :parameters ()
+            :task (remove_flag_land_played)
+            :precondition (and
+                (land_played)
+            )
+            :ordered-subtasks (and
+                (remove_flag_land_played)
+            )
+        )
+        (:method remove_land_played-pass
+            :parameters ()
+            :task (remove_flag_land_played)
+            :precondition (and
+                (not(land_played))
+            )
+            :ordered-subtasks (and
+            )
+        )
+)

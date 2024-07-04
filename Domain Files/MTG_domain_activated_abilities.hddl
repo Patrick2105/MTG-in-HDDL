@@ -1,0 +1,32 @@
+(define (domain MTG_activated_abilities)
+
+    (:task marble_chalice_1_cost :parameters (?card - card))
+        (:method marble_chalice_1_cost-target_card
+            :parameters (?card - card)
+            :task (marble_chalice_1_cost ?card)
+            :precondition (and
+            )
+            :ordered-tasks (and
+                (tap_permanent ?card)
+            )
+        )
+
+
+    (:task marble_chalice_1_effect)
+        (:method marble_chalice_1_effect-damage_card
+            :parameters (?index - int ?player - player ?life - int ?new_life - int)
+            :task (marble_chalice_1_effect)
+            :precondition (and
+                (head ?index)
+                (control_stack ?index ?player)
+
+                (life_total ?player ?life)
+                (add ?life n1 ?new_life)
+            )
+            :ordered-subtasks (and
+                (change_life_total ?player ?life ?new_life)
+            )
+        )
+
+
+)

@@ -1,0 +1,128 @@
+(define (domain MTG_combat)
+
+    (:task declare_attackers)
+        (:method declare_attackers-attack_player
+            :parameters(?card - card ?active_player - player ?target_player - player)
+            :task(declare_attackers)
+            :precondition(and
+                (zone ?card battlefield)
+                (type ?card creature)
+                (control ?card ?active_player)
+                (not(attacking ?card))
+                (untapped ?card)
+                (not(active_player ?target_player))           
+            )
+            :ordered-subtasks(and
+                (set_attacking_player ?card ?target_player)
+                (tap_permanent ?card)
+                ;(pay_additional_costs_attacking ?card ?target_player)
+                (declare_attackers)
+            )
+        )
+        (:method declare_attackers-done_declaring
+            :parameters ()
+            :task(declare_attackers)
+            :precondition ()
+            :ordered-subtasks ()
+        )
+
+
+    (:task combat_damage)
+        (:method combat_damage-done_checking
+            :parameters(?counter - int)
+            :task(combat_damage)
+            :precondition(and
+                (counter ?counter)
+                (card_count ?counter)
+            )
+            :ordered-subtasks(and
+                (change_counter ?counter n0)
+            ) 
+        )
+        (:method combat_damage-damage_player
+            :parameters(?card - card ?next_card - card 
+                        ?target_player - player ?value - int ?life_total - int ?new_life_total - int
+                        ?counter - int ?new_counter - int)
+            :task(combat_damage)
+            :precondition(and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (type ?card creature)
+                (zone ?card battlefield)
+                (not(power ?card n0))
+                (attacking ?card)
+                (attacking_player ?card ?target_player)
+
+                (power ?card ?value)
+                (life_total ?target_player ?life_total)
+                (sub ?life_total ?value ?new_life_total)
+            )
+            :ordered-subtasks(and
+                (change_life_total ?target_player ?life_total ?new_life_total)
+                (remove_attacking_player ?card ?target_player)
+
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (combat_damage)
+            )
+        )
+        (:method combat_damage-not_attacking
+            :parameters(?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task(combat_damage)
+            :precondition(and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(attacking ?card))
+            )
+            :ordered-subtasks(and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (combat_damage)
+            )
+        )
+        (:method combat_damage-not_battlefield
+            :parameters(?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task(combat_damage)
+            :precondition(and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(zone ?card battlefield))
+            )
+            :ordered-subtasks(and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (combat_damage)
+            )
+        )
+        (:method combat_damage-not_creature
+            :parameters(?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task(combat_damage)
+            :precondition(and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(type ?card creature))
+            )
+            :ordered-subtasks(and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (combat_damage)
+            )
+        )
+
+)

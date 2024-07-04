@@ -1,0 +1,279 @@
+(define (domain MTG_phases)
+
+    (:task untap_step)
+        (:method untap_step-complete_step
+            :parameters ()
+            :task (untap_step)
+            :ordered-subtasks(and
+                ; (phase_in_out)
+                ; (switch_day_night)
+                (untap_permanents)
+                (clear_mana_pools)
+                (upkeep_step)
+            )    
+        )
+        (:method untap_step-game_done
+            :parameters (?player - player)
+            :task (untap_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task upkeep_step)
+        (:method upkeep_step-complete_step
+            :parameters ()
+            :task (upkeep_step)
+            :ordered-subtasks(and
+                ; (triggers_begin_upkeep)
+                (check_state_based_actions)
+                (priority_actions)
+                (clear_mana_pools)
+                (draw_step)
+            )
+        )
+        (:method upkeep_step-game_done
+            :parameters (?player - player)
+            :task (upkeep_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )        
+
+
+    (:task draw_step)
+        (:method draw_step-complete_step
+            :parameters ()
+            :task (draw_step)
+            :ordered-subtasks(and
+                ; (draw_card)
+                (check_state_based_actions)
+                (priority_actions)
+                (clear_mana_pools)
+                (precombat_main_phase_setup)
+            )
+        )
+        (:method draw_step-game_done
+            :parameters (?player - player)
+            :task (draw_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task precombat_main_phase_setup)
+        (:method precombat_main_phase_setup-complete_step
+            :parameters ()
+            :task (precombat_main_phase_setup)
+            :ordered-subtasks(and
+                ; (increase_lore_counters)
+                ; (visit_attractions)
+                (main_phase)
+            )
+        )
+
+
+    (:task main_phase)
+        (:method main_phase-actions
+            :parameters ()
+            :task (main_phase)
+            :ordered-subtasks (and
+                (check_state_based_actions)
+                (sorcery_actions)
+                (main_phase)
+            )
+        )
+        (:method main_phase-pass_precombat
+            :parameters ()
+            :task (main_phase)
+            :precondition (and
+                (not(main_phase_done))
+            )
+            :ordered-subtasks(and 
+                (set_flag_main_phase_done)
+                (clear_mana_pools)
+                (begin_of_combat_step)
+            )
+        )
+        (:method main_phase-pass
+            :parameters ()
+            :task (main_phase)
+            :precondition (and
+                (main_phase_done)
+            )
+            :ordered-subtasks(and
+                (clear_mana_pools)
+                (end_step)
+            )
+        )
+        (:method main_phase-game_done
+            :parameters (?player - player)
+            :task (main_phase)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task begin_of_combat_step)
+        (:method begin_of_combat_step-complete_step
+            :parameters ()
+            :task (begin_of_combat_step)
+            :ordered-subtasks(and
+                ; (beginning of combat triggers)
+                (check_state_based_actions)
+                (priority_actions)
+                (clear_mana_pools)
+                (declare_attackers_step)
+            )
+        )
+        (:method begin_of_combat_step-game_done
+            :parameters (?player - player)
+            :task (begin_of_combat_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task declare_attackers_step)
+        (:method declare_attackers_step-complete_step
+            :parameters ()
+            :task (declare_attackers_step)
+            :ordered-subtasks(and
+                (declare_attackers)
+                (check_state_based_actions)
+                (priority_actions)
+                (clear_mana_pools)
+                (declare_blockers_step)
+            )
+        )
+        (:method declare_attackers_step-game_done
+            :parameters (?player - player)
+            :task (declare_attackers_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task declare_blockers_step)
+        (:method declare_blockers_step-complete_step
+            :parameters ()
+            :task (declare_blockers_step)
+            :ordered-subtasks(and
+                ; (declare blockers)
+                (check_state_based_actions)
+                (priority_actions)
+                (clear_mana_pools)
+                (combat_damage_step)
+            )
+        )
+        (:method declare_blockers_step-game_done
+            :parameters (?player - player)
+            :task (declare_blockers_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task combat_damage_step)
+        (:method combat_damage_step-complete_step
+            :parameters ()
+            :task (combat_damage_step)
+            :ordered-subtasks (and
+                (combat_damage)
+                (check_state_based_actions)
+                (priority_actions)
+                (clear_mana_pools)
+                (end_of_combat_step)
+            )
+        )
+        (:method combat_damage-game_done
+            :parameters (?player - player)
+            :task (combat_damage)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task end_of_combat_step)
+        (:method end_of_combat_step-complete_step
+            :parameters ()
+            :task (end_of_combat_step)
+            :ordered-subtasks (and
+                ; (end of combat triggers)
+                (check_state_based_actions)
+                (priority_actions)
+                ; (until end of combat effects)
+                (clear_mana_pools)
+                (main_phase)
+            )
+        )
+        (:method end_of_combat_step-game_done
+            :parameters (?player - player)
+            :task (end_of_combat_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task end_step)
+        (:method end_step-complete_step
+            :parameters ()
+            :task (end_step)
+            :ordered-subtasks(and
+                ; (beginning of end step triggers)
+                (check_state_based_actions)
+                (priority_actions)
+                (clear_mana_pools)
+                (cleanup_step)
+            )
+        )
+        (:method end_step-game_done
+            :parameters (?player - player)
+            :task (end_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+    (:task cleanup_step)
+        (:method cleanup_step-end
+            :parameters ()
+            :task (cleanup_step)
+            :subtasks (and
+                ; (discard to 7 cards)
+                (clear_creature_damage)
+                (remove_main_phase_done)
+                (remove_land_played)
+                (clear_mana_pools)
+            )
+        )
+        (:method cleanup_step-game_done
+            :parameters (?player - player)
+            :task (cleanup_step)
+            :precondition (and
+                (lost_game ?player)
+            )
+            :ordered-subtasks ()
+        )
+
+
+)

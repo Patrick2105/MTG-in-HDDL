@@ -1,0 +1,397 @@
+(define (domain MTG_state_based)    
+
+    (:task check_state_based_actions)
+        (:method check_state_based_actions-done
+            :parameters ()
+            :task (check_state_based_actions)
+            :precondition (and
+                (not(state_based_action))
+            )
+            :ordered-subtasks (and
+                (set_flag_state_based_action)
+            )
+        )
+        (:method check_state_based_actions-check_state_based_actions
+            :parameters ()
+            :task (check_state_based_actions)
+            :precondition (and
+                (state_based_action)
+            )
+            :ordered-subtasks (and
+                (remove_flag_state_based_action)
+                (check_player_life)
+                ;(check for drawing cards from empty deck)
+                ;(check for poison counters)
+                (check_token_zones)
+                ;(check for copies of spells outside stack)
+                (check_creature_toughness)
+                (check_creature_damage)
+                ;(check for deathtouch)
+                ;(check for planeswalker loyalty)
+                ;(check for legend rule)
+                ;(check for world rule)
+                ;(check for aura attachment)
+                ;(check for equipment attachment)
+                ;(check for battle/creature attachment)
+                ;(balance +1/+1 and -1/-1 counters)
+                ;(check for max counters)
+                ;(check for lore counters)
+                ;(check for finished dungeons)
+                ;(check for space sculptor)
+                ;(check for battle defense)
+                ;(check for battle protector)
+                ;(check for siege controller)
+                ;(check for role tokens)
+                (check_state_based_actions)
+            )
+        )
+
+    (:task check_player_life)
+        (:method check_player_life-done
+            :parameters (?count - int)
+            :task (check_player_life)
+            :precondition (and
+                (player_count ?count)
+                (counter ?count)
+            )
+            :ordered-subtasks (and
+                (change_counter ?count n0)
+            )
+        )
+        (:method check_player_life-lost_game
+            :parameters (?player - player ?next_player - player ?counter - int ?new_counter - int)
+            :task (check_player_life)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_player ?player)
+                (linked_player ?player ?next_player)
+
+                (life_total ?player n0)
+                (not(lost_game ?player))
+            )
+            :ordered-subtasks (and
+                (set_flag_state_based_action)
+                (set_flag_lost_game ?player)
+
+                (change_counter ?counter ?new_counter)
+                (change_current_player ?player ?next_player)
+                (check_player_life)
+            )
+        )
+        (:method check_player_life-not_lost
+            :parameters (?player - player ?next_player - player ?counter - int ?new_counter - int)
+            :task (check_player_life)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_player ?player)
+                (linked_player ?player ?next_player)
+
+                (not(life_total ?player n0))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_player ?player ?next_player)
+                (check_player_life)
+            )
+        )
+        (:method check_player_life-already_lost
+            :parameters (?player - player ?next_player - player ?counter - int ?new_counter - int)
+            :task (check_player_life)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_player ?player)
+                (linked_player ?player ?next_player)
+
+                (lost_game ?player)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_player ?player ?next_player)
+                (check_player_life)
+            )
+        )
+
+    (:task check_token_zones)
+        (:method check_token_zones-done
+            :parameters (?counter - int)
+            :task (check_token_zones)
+            :precondition (and
+                (counter ?counter)
+                (card_count ?counter)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter n0)
+            )
+        )
+        (:method check_token_zones-token_found
+            :parameters (?card - card ?next_card - card ?zone - zone ?counter - int ?new_counter - int)
+            :task (check_token_zones)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (token ?card)
+                (not(zone ?card battlefield))
+                (not(zone ?card token_zone))
+                (zone ?card ?zone)
+            )
+            :ordered-subtasks (and
+                (change_zones ?card ?zone token_zone)
+                (set_flag_state_based_action)
+
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_token_zones)
+            )
+        )
+        (:method check_token_zones-not_token
+            :parameters (?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task (check_token_zones)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(token ?card))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_token_zones)
+            )
+        )
+        (:method check_token_zones-in_battlefield
+            :parameters (?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task (check_token_zones)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (zone ?card battlefield)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_token_zones)
+            )
+        )
+        (:method check_token_zones-in_token_zone
+            :parameters (?card - card ?next_card - card ?counter - int ?new_counter - int)
+            :task (check_token_zones)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (zone ?card token_zone)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_token_zones)
+            )
+        )
+
+    (:task check_creature_toughness)
+        (:method check_creature_toughness-done
+            :parameters (?counter - int)
+            :task (check_creature_toughness)
+            :precondition (and
+                (counter ?counter)
+                (card_count ?counter)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter n0)
+            )
+        )
+        (:method check_creature_toughness-found_creature
+            :parameters (?card - card ?next_card - card ?toughness - int ?counter - int ?new_counter - int)
+            :task (check_creature_toughness)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (type ?card creature)
+                (toughness ?card n0)
+                (zone ?card battlefield)
+            )
+            :ordered-subtasks (and
+                (change_zones ?card battlefield graveyard)
+                (set_flag_state_based_action)
+
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_toughness)
+            )
+        )
+        (:method check_creature_toughness-not_creature
+            :parameters (?card - card ?next_card - card ?toughness - int ?counter - int ?new_counter - int)
+            :task (check_creature_toughness)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(type ?card creature))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_toughness)
+            )
+        )
+        (:method check_creature_toughness-not_battlefield
+            :parameters (?card - card ?next_card - card ?toughness - int ?counter - int ?new_counter - int)
+            :task (check_creature_toughness)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+
+                (not(zone ?card battlefield))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_toughness)
+            )
+        )
+        (:method check_creature_toughness-not_toughness
+            :parameters (?card - card ?next_card - card ?toughness - int ?counter - int ?new_counter - int)
+            :task (check_creature_toughness)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(toughness ?card n0))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_toughness)
+            )
+        )
+
+
+    (:task check_creature_damage)
+        (:method check_creature_damage-done
+            :parameters (?counter - int)
+            :task (check_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (card_count ?counter)
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter n0)
+            )
+        )
+        (:method check_creature_damage-found_creature
+            :parameters (?card - card ?next_card - card ?toughness - int ?damage - int ?counter - int ?new_counter - int)
+            :task (check_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (type ?card creature)
+                (zone ?card battlefield)
+                (toughness ?card ?toughness)
+                (creature_damage ?card ?damage)
+                (geq ?damage ?toughness)
+            )
+            :ordered-subtasks (and
+                (change_zones ?card battlefield graveyard)
+                (set_flag_state_based_action)
+
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_damage)
+            )
+        )
+        (:method check_creature_damage-no_damage
+            :parameters (?card - card ?next_card - card ?toughness - int ?damage - int ?counter - int ?new_counter - int)
+            :task (check_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (toughness ?card ?toughness)
+                (creature_damage ?card ?damage)
+                (not(geq ?damage ?toughness))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_damage)
+            )
+        )
+        (:method check_creature_damage-not_battlefield
+            :parameters (?card - card ?next_card - card ?toughness - int ?counter - int ?new_counter - int)
+            :task (check_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(zone ?card battlefield))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_damage)
+            )
+        )
+        (:method check_creature_damage-not_creature
+            :parameters (?card - card ?next_card - card ?toughness - int ?counter - int ?new_counter - int)
+            :task (check_creature_damage)
+            :precondition (and
+                (counter ?counter)
+                (add ?counter n1 ?new_counter)
+
+                (current_card ?card)
+                (linked_card ?card ?next_card)
+
+                (not(type ?card creature))
+            )
+            :ordered-subtasks (and
+                (change_counter ?counter ?new_counter)
+                (change_current_card ?card ?next_card)
+                (check_creature_damage)
+            )
+        )
+
+)

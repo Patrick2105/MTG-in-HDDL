@@ -1,0 +1,580 @@
+(define (domain MTG_zones)
+
+    (:task set_card_parts :parameters (?card - card))
+        (:method set_card_parts-done
+            :parameters (?card - card ?counter - int)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (base_card_parts_count ?card ?counter)
+            )
+            :ordered-subtasks(and
+            )
+        )
+        (:method set_card_parts-power
+            :parameters (?card - card ?counter - int ?new_counter - int ?power - int)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_power ?card ?power)
+                (not(power ?card ?power))
+            )
+            :ordered-subtasks (and
+                (set_power ?card ?power)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (set_card_parts ?card)
+            )
+        )
+        (:method set_card_parts-toughness
+            :parameters (?card - card ?counter - int ?new_counter - int ?toughness - int)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_toughness ?card ?toughness)
+                (not(toughness ?card ?toughness))
+            )
+            :ordered-subtasks (and
+                (set_toughness ?card ?toughness)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (set_card_parts ?card)
+            )
+        )
+        (:method set_card_parts-rules_text
+            :parameters (?card - card ?counter - int ?new_counter - int ?effect - effect)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_rules_text ?card ?effect)
+                (not(rules_text ?card ?effect))
+            )
+            :ordered-subtasks (and
+                (set_rules_text ?card ?effect)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (set_card_parts ?card)
+            )
+        )
+        (:method set_card_parts-supertype
+            :parameters (?card - card ?counter - int ?new_counter - int ?supertype - supertype)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_supertype ?card ?supertype)
+                (not(supertype ?card ?supertype))
+            )
+            :ordered-subtasks (and
+                (set_supertype ?card ?supertype)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (set_card_parts ?card)
+            )
+        )
+        (:method set_card_parts-type
+            :parameters (?card - card ?counter - int ?new_counter - int ?type - type)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_type ?card ?type)
+                (not(type ?card ?type))
+            )
+            :ordered-subtasks (and
+                (set_type ?card ?type)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (set_card_parts ?card)
+            )
+        )
+        (:method set_card_parts-subtype
+            :parameters (?card - card ?counter - int ?new_counter - int ?subtype - subtype)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_subtype ?card ?subtype)
+                (not(subtype ?card ?subtype))
+            )
+            :ordered-subtasks (and
+                (set_subtype ?card ?subtype)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (set_card_parts ?card)
+            )
+        )
+        (:method set_card_parts-card_name
+            :parameters (?card - card ?counter - int ?new_counter - int ?card_name - card_name)
+            :task (set_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_card_name ?card ?card_name)
+                (not(card_name ?card ?card_name))
+            )
+            :ordered-subtasks (and
+                (set_card_name ?card ?card_name)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (set_card_parts ?card)
+            )
+        )
+
+
+    (:task set_card_mana :parameters (?card - card))
+        (:method set_card_mana-done
+            :parameters (?card - card ?counter - int)
+            :task (set_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (base_card_mana_count ?card ?counter)
+            )
+            :ordered-subtasks (and
+            )
+        )
+        (:method set_card_mana-color
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color)
+            :task (set_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_mana_cost_color ?card ?color1 ?value)
+                (not(mana_cost_color ?card ?color1 ?value))
+            )
+            :ordered-subtasks (and
+                (set_mana_cost_color ?card ?color1 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (set_card_mana ?card)
+            )
+        )
+        (:method set_card_mana-phyrexian
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color)
+            :task (set_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_mana_cost_phyrexian ?card ?color1 ?value)
+                (not(mana_cost_phyrexian ?card ?color1 ?value))
+            )
+            :ordered-subtasks (and
+                (set_mana_cost_phyrexian ?card ?color1 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (set_card_mana ?card)
+            )
+        )
+        (:method set_card_mana-phyrexian_hybrid
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color ?color2 - color)
+            :task (set_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?value)
+                (not(mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?value))
+            )
+            :ordered-subtasks (and
+                (set_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (set_card_mana ?card)
+            )
+        )
+        (:method set_card_mana-hybrid
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color ?color2 - color)
+            :task (set_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_mana_cost_hybrid ?card ?color1 ?color2 ?value)
+                (not(mana_cost_hybrid ?card ?color1 ?color2 ?value))
+            )
+            :ordered-subtasks (and
+                (set_mana_cost_hybrid ?card ?color1 ?color2 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (set_card_mana ?card)
+            )
+        )
+        (:method set_card_mana-hybrid_mono
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color)
+            :task (set_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_mana_cost_hybrid_mono ?card ?color1 ?value)
+                (not(mana_cost_hybrid_mono ?card ?color1 ?value))
+            )
+            :ordered-subtasks (and
+                (set_mana_cost_hybrid_mono ?card ?color1 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (set_card_mana ?card)
+            )
+        )
+        (:method set_card_mana-generic
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int)
+            :task (set_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (add ?counter n1 ?new_counter)
+                (base_mana_cost_generic ?card ?value)
+                (not(mana_cost_generic ?card ?value))
+            )
+            :ordered-subtasks (and
+                (set_mana_cost_generic ?card ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (set_card_mana ?card)
+            )
+        )
+
+    (:task remove_card_parts :parameters (?card - card))
+        (:method remove_card_parts-done
+            :parameters (?card - card)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card n0)
+            )
+            :ordered-subtasks ()
+        )
+        (:method remove_card_parts-power
+            :parameters (?card - card ?counter - int ?new_counter - int ?power - int)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (power ?card ?power)
+            )
+            :ordered-subtasks (and
+                (remove_power ?card ?power)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (remove_card_parts ?card)
+            )
+        )
+        (:method remove_card_parts-toughness
+            :parameters (?card - card ?counter - int ?new_counter - int ?toughness - int)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (toughness ?card ?toughness)
+            )
+            :ordered-subtasks (and
+                (remove_toughness ?card ?toughness)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (remove_card_parts ?card)
+            )
+        )
+        (:method remove_card_parts-rules_text
+            :parameters (?card - card ?counter - int ?new_counter - int ?effect - effect)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (rules_text ?card ?effect)
+            )
+            :ordered-subtasks (and
+                (remove_rules_text ?card ?effect)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (remove_card_parts ?card)
+            )
+        )
+        (:method remove_card_parts-supertype
+            :parameters (?card - card ?counter - int ?new_counter - int ?supertype - supertype)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (supertype ?card ?supertype)
+            )
+            :ordered-subtasks (and
+                (remove_supertype ?card ?supertype)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (remove_card_parts ?card)
+            )
+        )
+        (:method remove_card_parts-type
+            :parameters (?card - card ?counter - int ?new_counter - int ?type - type)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (type ?card ?type)
+            )
+            :ordered-subtasks (and
+                (remove_type ?card ?type)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (remove_card_parts ?card)
+            )
+        )
+        (:method remove_card_parts-subtype
+            :parameters (?card - card ?counter - int ?new_counter - int ?subtype - subtype)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (subtype ?card ?subtype)
+            )
+            :ordered-subtasks (and
+                (remove_subtype ?card ?subtype)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (remove_card_parts ?card)
+            )
+        )
+        (:method remove_card_parts-card_name
+            :parameters (?card - card ?counter - int ?new_counter - int ?card_name - card_name)
+            :task (remove_card_parts ?card)
+            :precondition (and
+                (card_parts_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (card_name ?card ?card_name)
+            )
+            :ordered-subtasks (and
+                (remove_card_name ?card ?card_name)
+                (change_card_parts_count ?card ?counter ?new_counter)
+                (remove_card_parts ?card)
+            )
+        )
+
+    (:task remove_card_mana :parameters (?card - card))
+        (:method remove_card_mana-done
+            :parameters (?card - card)
+            :task (remove_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card n0)
+            )
+            :ordered-subtasks (and
+            )
+        )
+        (:method remove_card_mana-color
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color)
+            :task (remove_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (mana_cost_color ?card ?color1 ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_color ?card ?color1 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (remove_card_mana ?card)
+            )
+        )
+        (:method remove_card_mana-phyrexian
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color)
+            :task (remove_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (mana_cost_phyrexian ?card ?color1 ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian ?card ?color1 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (remove_card_mana ?card)
+            )
+        )
+        (:method remove_card_mana-phyrexian_hybrid
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color ?color2 - color)
+            :task (remove_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (remove_card_mana ?card)
+            )
+        )
+        (:method remove_card_mana-hybrid
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color ?color2 - color)
+            :task (remove_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (mana_cost_hybrid ?card ?color1 ?color2 ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid ?card ?color1 ?color2 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (remove_card_mana ?card)
+            )
+        )
+        (:method remove_card_mana-hybrid_mono
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int ?color1 - color)
+            :task (remove_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (mana_cost_hybrid_mono ?card ?color1 ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid_mono ?card ?color1 ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (remove_card_mana ?card)
+            )
+        )
+        (:method remove_card_mana-generic
+            :parameters (?card - card ?value - int ?counter - int ?new_counter - int)
+            :task (remove_card_mana ?card)
+            :precondition (and
+                (card_mana_count ?card ?counter)
+                (sub0 ?counter n1 ?new_counter)
+                (mana_cost_generic ?card ?value)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_generic ?card ?value)
+                (change_card_mana_count ?card ?counter ?new_counter)
+                (remove_card_mana ?card)
+            )
+        )
+
+    (:task remove_targets :parameters (?card - card))
+        (:method remove_targets-done
+            :parameters (?card - card ?counter - int)
+            :task (remove_targets ?card)
+            :precondition (and
+                (index_counter ?counter)
+                (head ?counter)
+            )
+            :ordered-subtasks (and
+                (change_index_counter ?counter n0)
+            )
+        )
+        (:method remove_targets-remove_target
+            :parameters (?card - card ?counter - int ?new_counter - int)
+            :task (remove_targets ?card)
+            :precondition (and
+                (target_card ?counter ?card)
+
+                (index_counter ?counter)
+                (add ?counter n1 ?new_counter)
+            )
+            :ordered-subtasks (and
+                (pop_choice_card ?counter ?card)
+                (push_invalid_card ?counter ?card)
+                (change_index_counter ?counter ?new_counter)
+                (remove_targets ?card)
+            )
+        )
+        (:method remove_targets-skip
+            :parameters (?card - card ?counter - int ?new_counter - int)
+            :task (remove_targets ?card)
+            :precondition (and
+                (not(target_card ?counter ?card))
+                
+                (index_counter ?counter)
+                (add ?counter n1 ?new_counter)
+            )
+            :ordered-subtasks (and
+                (change_index_counter ?counter ?new_counter)
+                (remove_targets ?card)
+            )
+        )
+
+    (:task remove_from_combat :parameters (?card - card))
+        (:method remove_from_combat-attacking_player
+            :parameters (?card - card ?player - player)
+            :task (remove_from_combat ?card)
+            :precondition (and
+                (attacking ?card)
+                (attacking_player ?card ?player)
+            )
+            :ordered-subtasks (and
+                (remove_attacking_player ?card ?player)
+            )
+        )
+        (:method remove_from_combat-not_attacking
+            :parameters (?card - card)
+            :task (remove_from_combat ?card)
+            :precondition (and
+                (not(attacking ?card))
+            )
+            :ordered-subtasks ()
+        )
+
+    (:task leave_zone :parameters (?card - card ?zone - zone))
+        (:method leave_zone-standard
+            :parameters (?card - card ?zone - zone)
+            :task (leave_zone ?card ?zone)
+            :precondition (and
+                (not(= ?zone battlefield))
+            )
+            :ordered-subtasks ()
+        )
+        (:method leave_zone-creature_battlefield
+            :parameters (?card - card ?zone - zone ?damage - int)
+            :task (leave_zone ?card ?zone)
+            :precondition (and
+                (= ?zone battlefield)
+                (type ?card creature)
+                (creature_damage ?card ?damage)
+            )
+            :ordered-subtasks (and
+                (remove_from_combat ?card)
+                (remove_creature_damage ?card ?damage)
+                (remove_untapped ?card)
+                (remove_tapped ?card)
+            )
+        )
+        (:method leave_zone-not_creature_battlefield
+            :parameters (?card - card ?zone - zone ?damage - int)
+            :task (leave_zone ?card ?zone)
+            :precondition (and
+                (= ?zone battlefield)
+                (not(type ?card creature))
+            )
+            :ordered-subtasks (and
+                (remove_untapped ?card)
+                (remove_tapped ?card)
+            )
+        )
+
+    (:task enter_zone :parameters (?card - card ?zone - zone))
+        (:method enter_zone-standard
+            :parameters (?card - card ?zone - zone)
+            :task (enter_zone ?card ?zone)
+            :precondition (and
+                (not(= ?zone battlefield))
+            )
+            :ordered-subtasks ()
+        )
+        (:method enter_zone-creature_battlefield
+            :parameters (?card - card ?zone - zone)
+            :task (enter_zone ?card ?zone)
+            :precondition (and
+                (= ?zone battlefield)
+                (type ?card creature)
+            )
+            :ordered-subtasks (and
+                (set_creature_damage ?card n0)
+                (set_untapped ?card)
+            )
+        )
+        (:method enter_zone-not_creature_battlefield
+            :parameters (?card - card ?zone - zone)
+            :task (enter_zone ?card ?zone)
+            :precondition (and
+                (= ?zone battlefield)
+                (not(type ?card creature))
+            )
+            :ordered-subtasks (and
+                (set_untapped ?card)
+            )
+        )
+
+
+    (:task change_zones :parameters(?card - card ?zone - zone ?new_zone - zone))
+        (:method change_zones-base
+            :parameters (?card - card ?zone - zone ?new_zone - zone)
+            :task (change_zones ?card ?zone ?new_zone)
+            :precondition (and
+            )
+            :ordered-subtasks (and
+                (leave_zone ?card ?zone)
+                (remove_card_parts ?card)
+                (remove_card_mana ?card)
+                (remove_targets ?card)
+
+                (change_zone_action ?card ?zone ?new_zone)
+
+                (set_card_parts ?card)
+                (set_card_mana ?card)
+                (enter_zone ?card ?new_zone)
+            )
+        )
+)

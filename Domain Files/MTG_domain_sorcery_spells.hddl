@@ -1,0 +1,61 @@
+(define (domain MTG_sorcery_spells)
+
+    (:task scorching_shot_1_cost :parameters (?card - card ?player - player))
+        (:method scorching_shot_1_cost-target_card
+            :parameters (?index - int ?target - card ?card - card ?player - player)
+            :task (scorching_shot_1_cost ?card ?player)
+            :precondition (and
+                (head ?index)
+                (type ?target creature)
+                (zone ?target battlefield)
+            )
+            :ordered-tasks (and
+                (push_choice_card ?index ?target)
+                (pay_mana_cost ?card ?player)
+            )
+        )
+
+
+    (:task scorching_shot_1_effect)
+        (:method scorching_shot_1_effect-damage_card
+            :parameters (?index - int ?target - card ?damage - int ?new_damage - int)
+            :task (scorching_shot_1_effect)
+            :precondition (and
+                (head ?index)
+                (target_card ?index ?target)
+
+                (type ?target creature)
+                (creature_damage ?target ?damage)
+                (add ?damage n5 ?new_damage)
+            )
+            :ordered-subtasks (and
+                (remove_creature_damage ?target ?damage)
+                (set_creature_damage ?target ?new_damage)
+                (pop_choice_card ?index ?target)
+            )
+        )
+        (:method scorching_shot_1_effect-invalid_target
+            :parameters (?index - int ?target - card ?damage - int ?new_damage - int)
+            :task (scorching_shot_1_effect)
+            :precondition (and
+                (head ?index)
+                (invalid_target_card ?index ?target)
+            )
+            :ordered-subtasks (and
+                (pop_invalid_card ?index ?target)
+            )
+        )
+        (:method scorching_shot_1_effect-invalid_card
+            :parameters (?index - int ?target - card ?damage - int ?new_damage - int)
+            :task (scorching_shot_1_effect)
+            :precondition (and
+                (head ?index)
+                (not(type ?target creature))
+            )
+            :ordered-subtasks (and
+                (pop_choice_card ?index ?target)
+            )
+        )
+
+
+)

@@ -1,0 +1,684 @@
+(define (domain MTG_actions)
+
+    ; flag actions
+
+    (:action change_current_card
+        :parameters (?card - card ?next_card - card)
+        :precondition ()
+        :effect (and
+            (not(current_card ?card))
+            (current_card ?next_card)
+        )
+    )
+
+    (:action change_current_player
+        :parameters (?player - player ?next_player - player)
+        :precondition ()
+        :effect (and
+            (not(current_player ?player))
+            (current_player ?next_player)
+        )
+    )
+
+    (:action set_flag_checked_card
+        :parameters (?card - card)
+        :precondition(and
+            (not(checked_card ?card))
+        )
+        :effect(and
+            (checked_card ?card)
+        )
+    )
+    (:action remove_flag_checked_card
+        :parameters (?card - card)
+        :precondition(and
+            (checked_card ?card)
+        )
+        :effect(and
+            (not(checked_card ?card))
+        )
+    )
+
+    (:action set_flag_checked_player
+        :parameters (?player - player)
+        :precondition ()
+        :effect (and
+            (checked_player ?player)
+        )
+    )
+    (:action remove_flag_checked_player
+        :parameters (?player - player)
+        :precondition ()
+        :effect (and
+            (not(checked_player ?player))
+        )
+    )
+
+    (:action set_flag_land_played
+        :parameters ()
+        :precondition ()
+        :effect (and
+            (land_played)
+        )
+    )
+    (:action remove_flag_land_played
+        :parameters ()
+        :precondition ()
+        :effect (and
+            (not(land_played))
+        )
+    )
+
+
+    (:action set_flag_main_phase_done
+        :parameters ()
+        :precondition (and
+            (not(main_phase_done))
+        )
+        :effect (and
+            (main_phase_done)
+        )
+    )
+    (:action remove_flag_main_phase_done
+        :parameters ()
+        :precondition (and
+            (main_phase_done)
+        )
+        :effect (and
+            (not(main_phase_done))
+        )
+    )
+
+    (:action set_flag_state_based_action
+        :parameters ()
+        :precondition ()
+        :effect (and
+            (state_based_action)
+        )
+    )
+    (:action remove_flag_state_based_action
+        :parameters ()
+        :precondition ()
+        :effect (and
+            (not(state_based_action))
+        )
+    )
+
+    (:action set_flag_lost_game
+        :parameters (?player - player)
+        :precondition ()
+        :effect (and
+            (lost_game ?player)
+        )
+    )
+
+    (:action change_counter
+        :parameters (?value - int ?new_value - int)
+        :precondition ()
+        :effect (and
+            (not(counter ?value))
+            (counter ?new_value)
+        )
+    )
+    (:action change_index_counter
+        :parameters (?value - int ?new_value - int)
+        :precondition ()
+        :effect (and
+            (not(index_counter ?value))
+            (index_counter ?new_value)
+        )
+    )
+
+    ; combat actions
+
+    (:action set_attacking_player
+        :parameters (?card - card ?player - player)
+        :precondition(and
+            (zone ?card battlefield)
+            (not(attacking ?card))
+            (not(active_player ?player))
+        )
+        :effect(and
+            (attacking ?card)
+            (attacking_player ?card ?player)
+            (tapped ?card)
+        )
+    )   
+    (:action remove_attacking_player
+        :parameters (?card - card ?player - player)
+        :precondition(and
+            (attacking ?card)
+            (attacking_player ?card ?player)
+        )
+        :effect(and
+            (not(attacking ?card))
+            (not(attacking_player ?card ?player))
+        )
+    ) 
+
+    (:action set_creature_damage 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (creature_damage ?card ?value)
+        )
+    )
+    (:action remove_creature_damage 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (not(creature_damage ?card ?value))
+        )
+    )
+
+    (:action set_untapped
+        :parameters (?card - card)
+        :precondition ()
+        :effect (and
+            (untapped ?card)
+        )
+    )
+    (:action remove_untapped
+        :parameters (?card - card)
+        :precondition ()
+        :effect (and
+            (not(untapped ?card))
+        )
+    )
+
+    (:action set_tapped
+        :parameters (?card - card)
+        :precondition ()
+        :effect (and
+            (tapped ?card)
+        )
+    )
+    (:action remove_tapped
+        :parameters (?card - card)
+        :precondition ()
+        :effect (and
+            (not(tapped ?card))
+        )
+    )
+
+    (:action untap_permanent
+        :parameters (?card - card)
+        :precondition(and
+            (zone ?card battlefield)
+        )
+        :effect(and
+            (not(tapped ?card))
+            (untapped ?card)
+        )
+    )
+    (:action tap_permanent
+        :parameters (?card - card)
+        :precondition(and
+            (zone ?card battlefield)
+        )
+        :effect(and
+            (not(untapped ?card))
+            (tapped ?card)        
+        )    
+    )
+
+    ; stack actions
+
+    (:action change_head
+        :parameters (?index - int ?new_index - int)
+        :precondition (and
+            (head ?index)
+        )
+        :effect (and
+            (head ?new_index)
+            (not (head ?index))
+        )
+    )
+
+    (:action push_effect
+        :parameters (?index - int ?effect - effect)
+        :precondition (and
+        )
+        :effect (and
+            (effect_stack ?index ?effect)
+        )
+    )
+    (:action pop_effect
+        :parameters (?index - int ?effect - effect)
+        :precondition (and
+        )
+        :effect (and
+            (not(effect_stack ?index ?effect))
+        )
+    )
+
+    (:action push_card
+        :parameters (?index - int ?card - card)
+        :precondition (and
+        )
+        :effect (and
+            (card_stack ?index ?card)
+        )    
+    )
+    (:action pop_card
+        :parameters (?index - int ?card - card)
+        :precondition (and
+        )
+        :effect (and
+            (not(card_stack ?index ?card))
+        )      
+    )
+
+    (:action push_control_stack
+        :parameters (?index - int ?player - player)
+        :precondition ()
+        :effect (and
+            (control_stack ?index ?player)
+        )
+    )
+    (:action pop_control_stack
+        :parameters (?index - int ?player - player)
+        :precondition ()
+        :effect (and
+            (not(control_stack ?index ?player))
+        )
+    )
+
+    (:action push_choice_player
+        :parameters (?index - int ?player - player)
+        :precondition (and
+        )
+        :effect (and
+            (target_player ?index ?player)
+        )
+    )
+    (:action pop_choice_player
+        :parameters (?index - int ?player - player)
+        :precondition (and
+        )
+        :effect (and
+            (not(target_player ?index ?player))
+        )
+    ) 
+
+    (:action push_choice_card
+        :parameters (?index - int ?card - card)
+        :precondition (and
+        )
+        :effect (and
+            (target_card ?index ?card)
+        )
+    )
+    (:action pop_choice_card
+        :parameters (?index - int ?card - card)
+        :precondition (and
+        )
+        :effect (and
+            (not(target_card ?index ?card))
+        )
+    )
+
+    (:action push_invalid_card
+        :parameters (?index - int ?card - card)
+        :precondition ()
+        :effect (and
+            (invalid_target_card ?index ?card)
+        )
+    )
+    (:action pop_invalid_card
+        :parameters (?index - int ?card - card)
+        :precondition ()
+        :effect (and
+            (not(invalid_target_card ?index ?card))
+        )
+    )
+
+    (:action push_choice_color
+        :parameters (?index - int ?color - color)
+        :precondition (and
+        )
+        :effect (and
+            (target_color ?index ?color)
+        )
+    )
+    (:action pop_choice_color
+        :parameters (?index - int ?color - color)
+        :precondition (and
+        )
+        :effect (and
+            (target_color ?index ?color)
+        )
+    )
+
+    (:action push_flag_ability
+        :parameters (?index - int)
+        :precondition ()
+        :effect (and
+            (ability_stack ?index)
+        )
+    )
+    (:action pop_flag_ability
+        :parameters (?index - int)
+        :precondition ()
+        :effect (and
+            (not(ability_stack ?index))
+        )
+    )
+
+    (:action push_flag_spell
+        :parameters (?index - int)
+        :precondition ()
+        :effect (and
+            (spell_stack ?index)
+        )
+    )
+    (:action pop_flag_spell
+        :parameters (?index - int)
+        :precondition ()
+        :effect (and
+            (not(spell_stack ?index))
+        )
+    )
+
+    ; card parts actions
+
+    (:action change_card_parts_count
+        :parameters (?card - card ?count - int ?new_count - int)
+        :precondition ()
+        :effect (and
+            (not(card_parts_count ?card ?count))
+            (card_parts_count ?card ?new_count)
+        )
+    )
+
+    (:action set_power 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (power ?card ?value)
+        )
+    )
+    (:action remove_power 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (not(power ?card ?value))
+        )
+    )
+
+    (:action set_toughness 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (toughness ?card ?value)
+        )
+    )
+    (:action remove_toughness 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (not(toughness ?card ?value))
+        )
+    )
+
+    (:action set_rules_text
+        :parameters (?card - card ?effect - effect)
+        :precondition ()
+        :effect (and
+            (rules_text ?card ?effect)
+        )
+    )
+    (:action remove_rules_text
+        :parameters (?card - card ?effect - effect)
+        :precondition ()
+        :effect (and
+            (not(rules_text ?card ?effect))
+        )
+    )
+
+    (:action set_supertype
+        :parameters (?card - card ?supertype - supertype)
+        :precondition ()
+        :effect (and
+            (supertype ?card ?supertype)
+        )
+    )
+    (:action remove_supertype
+        :parameters (?card - card ?supertype - supertype)
+        :precondition ()
+        :effect (and
+            (not(supertype ?card ?supertype))
+        )
+    )
+
+    (:action set_type
+        :parameters (?card - card ?type - type)
+        :precondition ()
+        :effect (and
+            (type ?card ?type)
+        )
+    )
+    (:action remove_type
+        :parameters (?card - card ?type - type)
+        :precondition ()
+        :effect (and
+            (not(type ?card ?type))
+        )
+    )
+
+    (:action set_subtype
+        :parameters (?card - card ?subtype - subtype)
+        :precondition ()
+        :effect (and
+            (subtype ?card ?subtype)
+        )
+    )
+    (:action remove_subtype
+        :parameters (?card - card ?subtype - subtype)
+        :precondition ()
+        :effect (and
+            (not(subtype ?card ?subtype))
+        )
+    )
+
+    (:action set_card_name
+        :parameters (?card - card ?card_name - card_name)
+        :precondition ()
+        :effect (and
+            (card_name ?card ?card_name)
+        )
+    )
+    (:action remove_card_name
+        :parameters (?card - card ?card_name - card_name)
+        :precondition ()
+        :effect (and
+            (not(card_name ?card ?card_name))
+        )
+    )
+
+    ; mana actions
+
+    (:action change_card_mana_count
+        :parameters (?card - card ?count - int ?new_count - int)
+        :precondition ()
+        :effect (and
+            (not(card_mana_count ?card ?count))
+            (card_mana_count ?card ?new_count)
+        )
+    )
+
+    (:action set_mana_pool
+        :parameters (?player - player ?color - color ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_pool ?player ?color ?value)
+        )
+    )
+    (:action remove_mana_pool
+        :parameters (?player - player ?color - color ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_pool ?player ?color ?value))
+        )
+    )
+
+    (:action set_mana_cost_color 
+        :parameters (?card - card ?color1 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_cost_color ?card ?color1 ?value)
+        )
+    )
+    (:action remove_mana_cost_color 
+        :parameters (?card - card ?color1 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_cost_color ?card ?color1 ?value))
+
+        )
+    )
+
+    (:action set_mana_cost_phyrexian 
+        :parameters (?card - card ?color1 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_cost_phyrexian ?card ?color1 ?value)
+        )
+    )
+    (:action remove_mana_cost_phyrexian 
+        :parameters (?card - card ?color1 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_cost_phyrexian ?card ?color1 ?value))
+        )
+    )
+
+    (:action set_mana_cost_phyrexian_hybrid 
+        :parameters (?card - card ?color1 - color ?color2 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?value)
+        )
+    )
+    (:action remove_mana_cost_phyrexian_hybrid 
+        :parameters (?card - card ?color1 - color ?color2 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?value))
+        )
+    )
+
+    (:action set_mana_cost_hybrid 
+        :parameters (?card - card ?color1 - color ?color2 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_cost_hybrid ?card ?color1 ?color2 ?value)
+        )
+    )
+    (:action remove_mana_cost_hybrid 
+        :parameters (?card - card ?color1 - color ?color2 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_cost_hybrid ?card ?color1 ?color2 ?value))
+        )
+    )
+
+    (:action set_mana_cost_hybrid_mono 
+        :parameters (?card - card ?color1 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_cost_hybrid_mono ?card ?color1 ?value)
+        )
+    )
+    (:action remove_mana_cost_hybrid_mono 
+        :parameters (?card - card ?color1 - color ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_cost_hybrid_mono ?card ?color1 ?value))
+        )
+    )
+
+    (:action set_mana_cost_generic 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_cost_generic ?card ?value)
+        )
+    )
+    (:action remove_mana_cost_generic 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_cost_generic ?card ?value))
+        )
+    )
+
+    (:action set_mana_payment 
+        :parameters (?card - card ?color - color ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_payment ?card ?color ?value)
+        )
+    )
+    (:action remove_mana_payment
+        :parameters (?card - card ?color - color ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_payment ?card ?color ?value))
+        )
+    )
+
+    (:action set_mana_payment_generic 
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (mana_payment_generic ?card ?value)
+        )
+    )
+    (:action remove_mana_payment_generic
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (not(mana_payment_generic ?card ?value))
+        )
+    )
+
+    (:action set_life_payment
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (life_payment ?card ?value)
+        )
+    )
+    (:action remove_life_payment
+        :parameters (?card - card ?value - int)
+        :precondition ()
+        :effect (and
+            (not(life_payment ?card ?value))
+        )
+    )
+
+    ; misc actions
+
+    (:action change_zone_action
+        :parameters (?card - card ?zone - zone ?new_zone - zone)
+        :precondition (and
+            (zone ?card ?zone)
+        )
+        :effect (and
+            (not(zone ?card ?zone))
+            (zone ?card ?new_zone)
+        )
+    )
+
+    (:action change_life_total
+        :parameters (?player - player ?life_total - int ?new_life_total - int)
+        :precondition (and
+        )
+        :effect (and
+            (not(life_total ?player ?life_total))
+            (life_total ?player ?new_life_total)
+        )
+    )
+
+)

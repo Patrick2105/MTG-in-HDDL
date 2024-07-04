@@ -1,0 +1,384 @@
+(define (domain MTG_mana)
+
+    (:task pay_mana_cost :parameters (?card - card ?player - player))
+        (:method pay_mana_cost-pay_cost
+            :parameters (?card - card ?player - player)
+            :task (pay_mana_cost ?card ?player)
+            :precondition ()
+            :ordered-subtasks (and
+                (calculate_mana_payment ?card)
+                ;(check for static cost modifiers e.g: spells cost {2} less)
+                (mana_abilities)
+                (make_mana_payment ?card ?player)
+            )
+        )
+
+    (:task calculate_mana_payment :parameters (?card - card))
+        (:method calculate_mana_payment-setup
+            :parameters (?card - card)
+            :task (calculate_mana_payment ?card)
+            :precondition ()
+            :ordered-subtasks (and
+                (set_mana_payment ?card white n0)
+                (set_mana_payment ?card blue n0)
+                (set_mana_payment ?card black n0)
+                (set_mana_payment ?card red n0)
+                (set_mana_payment ?card green n0)
+                (set_mana_payment ?card colorless n0)
+                (set_mana_payment ?card snow n0)
+                (set_mana_payment_generic ?card n0)
+                (set_life_payment ?card n0)
+                (calculate_casting_cost ?card)
+            )
+        )
+
+    (:task calculate_casting_cost :parameters (?card - card))
+        (:method calculate_casting_cost-done
+            :parameters (?card - card)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (card_mana_count ?card n0)
+            )
+            :ordered-subtasks ()
+        )
+        (:method calculate_casting_cost-done_color
+            :parameters (?card - card ?mana_cost - int ?amount - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color ?count - int ?new_count - int)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_color ?card ?color1 ?mana_cost)
+                (mana_payment ?card ?color1 ?mana_payment)
+                (sub0 ?mana_cost ?amount n0)
+                (add ?mana_payment ?amount ?new_mana_payment)
+                (card_mana_count ?card ?count)
+                (sub0 ?count n1 ?new_count)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_color ?card ?color1 ?mana_cost)
+                (remove_mana_payment ?card ?color1 ?mana_payment)
+                (set_mana_payment ?card ?color1 ?new_mana_payment)
+                (change_card_mana_count ?card ?count ?new_count)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-done_generic
+            :parameters (?card - card ?mana_cost - int ?amount - int ?mana_payment - int
+                ?new_mana_payment - int ?count - int ?new_count - int)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_generic ?card ?mana_cost)
+                (mana_payment_generic ?card ?mana_payment)
+                (sub0 ?mana_cost ?amount n0)
+                (add ?mana_payment ?amount ?new_mana_payment)
+                (card_mana_count ?card ?count)
+                (sub0 ?count n1 ?new_count)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_generic ?card ?mana_cost)
+                (remove_mana_payment_generic ?card ?mana_payment)
+                (set_mana_payment_generic ?card ?new_mana_payment)
+                (change_card_mana_count ?card ?count ?new_count)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-phyrexian_mana
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_phyrexian ?card ?color1 ?mana_cost)
+                (mana_payment ?card ?color1 ?mana_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?mana_payment n1 ?new_mana_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian ?card ?color1 ?mana_cost)
+                (set_mana_cost_phyrexian ?card ?color1 ?new_mana_cost)
+                (remove_mana_payment ?card ?color1 ?mana_payment)
+                (set_mana_payment ?card ?color1 ?new_mana_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-phyrexian_life
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?life_payment - int
+                ?new_life_payment - int ?color1 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_phyrexian ?card ?color1 ?mana_cost)
+                (life_payment ?card ?life_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?life_payment n2 ?new_life_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian ?card ?color1 ?mana_cost)
+                (set_mana_cost_phyrexian ?card ?color1 ?new_mana_cost)
+                (remove_life_payment ?card ?life_payment)
+                (set_life_payment ?card ?new_life_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-done_phyrexian
+            :parameters (?card - card ?count - int ?new_count - int ?color1 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_phyrexian ?card ?color1 n0)
+                (card_mana_count ?card ?count)
+                (sub0 ?count n1 ?new_count)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian ?card ?color1 n0)
+                (change_card_mana_count ?card ?count ?new_count)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-phyrexian_hybrid_mana1
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color ?color2 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (mana_payment ?card ?color1 ?mana_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?mana_payment n1 ?new_mana_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (set_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?new_mana_cost)
+                (remove_mana_payment ?card ?color1 ?mana_payment)
+                (set_mana_payment ?card ?color1 ?new_mana_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-phyrexian_hybrid_mana2
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color ?color2 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (mana_payment ?card ?color2 ?mana_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?mana_payment n1 ?new_mana_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (set_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?new_mana_cost)
+                (remove_mana_payment ?card ?color2 ?mana_payment)
+                (set_mana_payment ?card ?color2 ?new_mana_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-phyrexian_hybrid_life
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?life_payment - int
+                ?new_life_payment - int ?color1 - color ?color2 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (life_payment ?card ?life_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?life_payment n2 ?new_life_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (set_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 ?new_mana_cost)
+                (remove_life_payment ?card ?life_payment)
+                (set_life_payment ?card ?new_life_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-done_phyrexian_hybrid
+            :parameters (?card - card ?count - int ?new_count - int ?color1 - color ?color2 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_phyrexian_hybrid ?card ?color1 ?color2 n0)
+                (card_mana_count ?card ?count)
+                (sub0 ?count n1 ?new_count)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_phyrexian_hybrid ?card ?color1 ?color2 n0)
+                (change_card_mana_count ?card ?count ?new_count)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-hybrid_mana1
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color ?color2 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (mana_payment ?card ?color1 ?mana_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?mana_payment n1 ?new_mana_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (set_mana_cost_hybrid ?card ?color1 ?color2 ?new_mana_cost)
+                (remove_mana_payment ?card ?color1 ?mana_payment)
+                (set_mana_payment ?card ?color1 ?new_mana_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-hybrid_mana2
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color ?color2 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (mana_payment ?card ?color2 ?mana_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?mana_payment n1 ?new_mana_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid ?card ?color1 ?color2 ?mana_cost)
+                (set_mana_cost_hybrid ?card ?color1 ?color2 ?new_mana_cost)
+                (remove_mana_payment ?card ?color2 ?mana_payment)
+                (set_mana_payment ?card ?color2 ?new_mana_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-done_hybrid
+            :parameters (?card - card ?count - int ?new_count - int ?color1 - color ?color2 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_hybrid ?card ?color1 ?color2 n0)
+                (card_mana_count ?card ?count)
+                (sub0 ?count n1 ?new_count)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid ?card ?color1 ?color2 n0)
+                (change_card_mana_count ?card ?count ?new_count)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-hybrid_mono_mana
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_hybrid_mono ?card ?color1 ?mana_cost)
+                (mana_payment ?card ?color1 ?mana_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?mana_payment n1 ?new_mana_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid_mono ?card ?color1 ?mana_cost)
+                (set_mana_cost_hybrid_mono ?card ?color1 ?new_mana_cost)
+                (remove_mana_payment ?card ?color1 ?mana_payment)
+                (set_mana_payment ?card ?color1 ?new_mana_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-hybrid_mono_generic
+            :parameters (?card - card ?mana_cost - int ?new_mana_cost - int ?mana_payment - int
+                ?new_mana_payment - int ?color1 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_hybrid_mono ?card ?color1 ?mana_cost)
+                (mana_payment_generic ?card ?mana_payment)
+                (sub0 ?mana_cost n1 ?new_mana_cost)
+                (add ?mana_payment n2 ?new_mana_payment)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid_mono ?card ?color1 ?mana_cost)
+                (set_mana_cost_hybrid_mono ?card ?color1 ?new_mana_cost)
+                (remove_mana_payment_generic ?card ?mana_payment)
+                (set_mana_payment_generic ?card ?new_mana_payment)
+                (calculate_casting_cost ?card)
+            )
+        )
+        (:method calculate_casting_cost-done_hybrid_mono
+            :parameters (?card - card ?count - int ?new_count - int ?color1 - color)
+            :task (calculate_casting_cost ?card)
+            :precondition (and
+                (mana_cost_hybrid_mono ?card ?color1 n0)
+                (card_mana_count ?card ?count)
+                (sub0 ?count n1 ?new_count)
+            )
+            :ordered-subtasks (and
+                (remove_mana_cost_hybrid_mono ?card ?color1 n0)
+                (change_card_mana_count ?card ?count ?new_count)
+                (calculate_casting_cost ?card)
+            )
+        )
+
+    (:task make_mana_payment :parameters (?card - card ?player - player))
+        (:method make_mana_payment-done
+            :parameters (?card - card ?player - player)
+            :task (make_mana_payment ?card ?player)
+            :precondition (and
+                (mana_payment ?card white n0)
+                (mana_payment ?card blue n0)
+                (mana_payment ?card black n0)
+                (mana_payment ?card red n0)
+                (mana_payment ?card green n0)
+                (mana_payment ?card colorless n0)
+                (mana_payment ?card snow n0)
+                (mana_payment_generic ?card n0)
+                (life_payment ?card n0)
+            )
+            :ordered-subtasks (and
+                (remove_mana_payment ?card white n0)
+                (remove_mana_payment ?card blue n0)
+                (remove_mana_payment ?card black n0)
+                (remove_mana_payment ?card red n0)
+                (remove_mana_payment ?card green n0)
+                (remove_mana_payment ?card colorless n0)
+                (remove_mana_payment ?card snow n0)
+                (remove_mana_payment_generic ?card n0)
+                (remove_life_payment ?card n0)
+            )
+        )
+        (:method make_mana_payment-pay_mana_color
+            :parameters (?card - card ?player - player ?color - color ?payment - int 
+                ?mana_pool - int ?new_mana_pool - int ?amount - int)
+            :task (make_mana_payment ?card ?player)
+            :precondition (and
+                (mana_payment ?card ?color ?payment)
+                (mana_pool ?player ?color ?mana_pool)
+                (sub0 ?payment ?amount n0)
+                (sub0 ?mana_pool ?amount ?new_mana_pool)
+            )
+            :ordered-subtasks (and
+                (remove_mana_payment ?card ?color ?payment)
+                (set_mana_payment ?card ?color n0)
+                (remove_mana_pool ?player ?color ?mana_pool)
+                (set_mana_pool ?player ?color ?new_mana_pool)
+                (make_mana_payment ?card ?player)
+            )
+        )
+        (:method make_mana_payment-pay_mana_generic
+            :parameters (?card - card ?player - player ?color - color ?payment - int ?new_payment - int 
+                ?mana_pool - int ?new_mana_pool - int ?amount - int)
+            :task (make_mana_payment ?card ?player)
+            :precondition (and
+                (mana_payment_generic ?card ?payment)
+                (mana_pool ?player ?color ?mana_pool)
+                (sub0 ?payment n1 ?new_payment)
+                (sub0 ?mana_pool n1 ?new_mana_pool)
+
+            )
+            :ordered-subtasks (and
+                (remove_mana_payment_generic ?card ?payment)
+                (set_mana_payment_generic ?card ?new_payment)
+                (remove_mana_pool ?player ?color ?mana_pool)
+                (set_mana_pool ?player ?color ?new_mana_pool)
+                (make_mana_payment ?card ?player)
+            )
+        )
+        (:method make_mana_payment-pay_life
+            :parameters (?card - card ?player - player ?payment - int ?amount - int ?life_total - int ?new_life_total - int)
+            :task (make_mana_payment ?card ?player)
+            :precondition (and
+                (life_payment ?card ?payment)
+                (life_total ?player ?life_total)
+                (sub0 ?payment ?amount n0)
+                (sub0 ?life_total ?amount ?new_life_total)
+            )
+            :ordered-subtasks (and
+                (remove_life_payment ?card ?payment)
+                (set_life_payment ?card n0)
+                (change_life_total ?player ?life_total ?new_life_total)
+                (make_mana_payment ?card ?player)
+            )
+        )
+
+)

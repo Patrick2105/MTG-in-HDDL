@@ -1,0 +1,350 @@
+(define (domain MTG_priority)
+
+    (:task sorcery_actions)
+        (:method sorcery_actions-pass_priority
+            :parameters ()
+            :task (sorcery_actions)
+            :precondition ()
+            :ordered-subtasks (and
+                (resolve_stack)
+            )
+        )
+        (:method sorcery_actions-priority_actions
+            :parameters ()
+            :task (sorcery_actions)
+            :precondition ()
+            :ordered-subtasks(and
+                (priority_actions)
+            )
+        )
+        (:method sorcery_actions-special_action_land_hand
+            :parameters (?card - card ?player - player)
+            :task (sorcery_actions)
+            :precondition (and
+                (zone ?card hand)
+                (control ?card ?player)
+                (active_player ?player)
+                (type ?card land)
+                (not(land_played))
+            )
+            :ordered-subtasks(and
+                (set_flag_land_played)
+                (change_zones ?card hand battlefield)
+            )
+        )
+        (:method sorcery_actions-scorching_shot_1
+            :parameters (?index - int ?new_index - int ?card - card ?player - player)
+            :task (sorcery_actions)
+            :precondition (and
+                (head ?index)
+                (add ?index n1 ?new_index)
+
+                (active_player ?player)
+                (rules_text ?card scorching_shot_1)
+                (control ?card ?player)
+                (zone ?card hand)
+            )
+            :ordered-subtasks(and
+                (push_effect ?index scorching_shot_1)
+                (push_card ?index ?card)
+                (push_control_stack ?index ?player)
+                (push_flag_spell ?index)
+                (change_zones ?card hand stack)
+                (scorching_shot_1_cost ?card ?player)
+
+                (change_head ?index ?new_index)
+
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+
+
+    (:task priority_actions)
+        (:method priority_actions-pass_priority
+            :parameters ()
+            :task (priority_actions)
+            :precondition ()
+            :ordered-subtasks(and
+                (resolve_stack)
+            )
+        )
+        (:method priority_actions-mana_abilities
+            :parameters ()
+            :task (priority_actions)
+            :precondition ()
+            :ordered-subtasks(and
+                (mana_abilities)
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+        (:method priority_actions-special_actions
+            :parameters ()
+            :task (priority_actions)
+            :precondition ()
+            :ordered-subtasks (and
+                (special_actions)
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+        (:method priority_actions-lightning_bolt_1
+            :parameters (?index - int ?new_index - int ?card - card ?player - player)
+            :task (priority_actions)
+            :precondition (and
+                (head ?index)
+                (add ?index n1 ?new_index)
+
+                (priority ?player)
+                (rules_text ?card lightning_bolt_1)
+                (control ?card ?player)
+                (zone ?card hand)
+            )
+            :ordered-subtasks(and
+                (push_effect ?index lightning_bolt_1)
+                (push_card ?index ?card)
+                (push_control_stack ?index ?player)
+                (push_flag_spell ?index)
+                (change_zones ?card hand stack)
+                (lightning_bolt_1_cost ?card ?player)
+
+                (change_head ?index ?new_index)
+
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+
+        (:method priority_actions-marble_chalice_1
+            :parameters (?index - int ?new_index - int ?card - card ?player - player)
+            :task (priority_actions)
+            :precondition (and
+                (head ?index)
+                (add ?index n1 ?new_index)
+
+                (priority ?player)
+                (rules_text ?card marble_chalice_1)
+                (control ?card ?player)
+                (zone ?card battlefield)
+            )
+            :ordered-subtasks(and
+                (push_effect ?index marble_chalice_1)
+                (push_control_stack ?index ?player)
+                (push_flag_ability ?index)
+                (marble_chalice_1_cost ?card)
+
+                (change_head ?index ?new_index)
+
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+
+
+    (:task mana_abilities)
+        (:method mana_abilities-done
+            :parameters ()
+            :task (mana_abilities)
+            :precondition ()
+            :ordered-subtasks(and)
+        )
+        (:method mana_abilities-basic_plains_1
+            :parameters (?card - card ?player - player ?value - int ?new_value - int)
+            :task (mana_abilities)
+            :precondition (and
+                (rules_text ?card basic_plains_1)
+                (zone ?card battlefield)
+                (untapped ?card)
+                (priority ?player)
+                (control ?card ?player)
+
+                (mana_pool ?player white ?value)
+                (add ?value n1 ?new_value)
+            )
+            :ordered-subtasks (and
+                (tap_permanent ?card)
+                (remove_mana_pool ?player white ?value)
+                (set_mana_pool ?player white ?new_value)
+                (mana_abilities)
+            )
+        )
+        (:method mana_abilities-basic_island_1
+            :parameters (?card - card ?player - player ?value - int ?new_value - int)
+            :task (mana_abilities)
+            :precondition (and
+                (rules_text ?card basic_island_1)
+                (zone ?card battlefield)
+                (untapped ?card)
+                (priority ?player)
+                (control ?card ?player)
+
+                (mana_pool ?player blue ?value)
+                (add ?value n1 ?new_value)
+            )
+            :ordered-subtasks (and
+                (tap_permanent ?card)
+                (remove_mana_pool ?player blue ?value)
+                (set_mana_pool ?player blue ?new_value)
+                (mana_abilities)
+            )
+        )
+        (:method mana_abilities-basic_swamp_1
+            :parameters (?card - card ?player - player ?value - int ?new_value - int)
+            :task (mana_abilities)
+            :precondition (and
+                (rules_text ?card basic_swamp_1)
+                (zone ?card battlefield)
+                (untapped ?card)
+                (priority ?player)
+                (control ?card ?player)
+
+                (mana_pool ?player black ?value)
+                (add ?value n1 ?new_value)
+            )
+            :ordered-subtasks (and
+                (tap_permanent ?card)
+                (remove_mana_pool ?player black ?value)
+                (set_mana_pool ?player black ?new_value)
+                (mana_abilities)
+            )
+        )
+        (:method mana_abilities-basic_mountain_1
+            :parameters (?card - card ?player - player ?value - int ?new_value - int)
+            :task (mana_abilities)
+            :precondition (and
+                (rules_text ?card basic_mountain_1)
+                (zone ?card battlefield)
+                (untapped ?card)
+                (priority ?player)
+                (control ?card ?player)
+
+                (mana_pool ?player red ?value)
+                (add ?value n1 ?new_value)
+            )
+            :ordered-subtasks (and
+                (tap_permanent ?card)
+                (remove_mana_pool ?player red ?value)
+                (set_mana_pool ?player red ?new_value)
+                (mana_abilities)
+            )
+        )
+        (:method mana_abilities-basic_forest_1
+            :parameters (?card - card ?player - player ?value - int ?new_value - int)
+            :task (mana_abilities)
+            :precondition (and
+                (rules_text ?card basic_forest_1)
+                (zone ?card battlefield)
+                (untapped ?card)
+                (priority ?player)
+                (control ?card ?player)
+
+                (mana_pool ?player green ?value)
+                (add ?value n1 ?new_value)
+            )
+            :ordered-subtasks (and
+                (tap_permanent ?card)
+                (remove_mana_pool ?player green ?value)
+                (set_mana_pool ?player green ?new_value)
+                (mana_abilities)
+            )
+        )
+
+
+    (:task special_actions)
+        (:method special_actions-done
+            :parameters ()
+            :task (special_actions)
+            :precondition ()
+            :ordered-subtasks (and)
+        )
+
+
+    (:task resolve_stack)
+        (:method resolve_stack-stack_resolved
+            :parameters (?index - int)
+            :task (resolve_stack)
+            :precondition (and
+                (head n0)
+            )
+            :ordered-subtasks (and
+            )
+        )
+        (:method resolve_stack-lightning_bolt_1
+            :parameters (?index - int ?new_index - int ?card - card ?player - player)
+            :task(resolve_stack)
+            :precondition (and
+                (head ?index)
+                (sub0 ?index n1 ?new_index)
+                
+                (effect_stack ?new_index lightning_bolt_1)
+                (card_stack ?new_index ?card)
+                (control_stack ?new_index ?player)
+            )
+            :ordered-subtasks (and
+                (change_head ?index ?new_index)
+
+                (lightning_bolt_1_effect)
+
+                (pop_effect ?new_index lightning_bolt_1)
+                (pop_card ?new_index ?card)
+                (pop_control_stack ?new_index ?player)
+                (pop_flag_spell ?new_index)
+
+                (change_zones ?card stack graveyard)
+
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+        (:method resolve_stack-scorching_shot_1
+            :parameters (?index - int ?new_index - int ?card - card ?player - player)
+            :task(resolve_stack)
+            :precondition (and
+                (head ?index)
+                (sub0 ?index n1 ?new_index)
+
+                (effect_stack ?new_index scorching_shot_1)
+                (card_stack ?new_index ?card)
+                (control_stack ?new_index ?player)
+            )
+            :ordered-subtasks (and
+                (change_head ?index ?new_index)
+
+                (scorching_shot_1_effect)
+
+                (pop_effect ?new_index scorching_shot_1)
+                (pop_card ?new_index ?card)
+                (pop_control_stack ?new_index ?player)
+                (pop_flag_spell ?new_index)
+
+                (change_zones ?card stack graveyard)
+
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+        (:method resolve_stack-marble_chalice_1
+            :parameters (?index - int ?new_index - int ?player - player)
+            :task(resolve_stack)
+            :precondition (and
+                (head ?index)
+                (sub0 ?index n1 ?new_index)
+
+                (effect_stack ?new_index marble_chalice_1)
+                (control_stack ?new_index ?player)
+            )
+            :ordered-subtasks (and
+                (change_head ?index ?new_index)
+
+
+                (marble_chalice_1_effect)
+                (pop_effect ?new_index marble_chalice_1)
+                (pop_control_stack ?new_index ?player)
+                (pop_flag_ability ?new_index)
+
+                (check_state_based_actions)
+                (priority_actions)
+            )
+        )
+)

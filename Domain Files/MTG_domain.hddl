@@ -1,0 +1,189 @@
+(define (domain MTG_domain)
+
+    (:include MTG_domain_actions)
+    (:include MTG_domain_phases)
+    (:include MTG_domain_priority)
+    (:include MTG_domain_turn_based)
+    (:include MTG_domain_zones)
+    (:include MTG_domain_combat)
+    (:include MTG_domain_mana)
+    (:include MTG_domain_instant_spells)
+    (:include MTG_domain_sorcery_spells)
+    (:include MTG_domain_activated_abilities)
+    (:include MTG_domain_state_based)
+
+    (:requirements :adl)
+
+    (:types
+        supertype type subtype - object
+        int - object
+        card - object
+        token - card
+        player - object
+        color - object
+        effect - object
+        zone - object
+        card_name - object
+    )
+
+    (:constants
+        ; integers
+        n0 n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16 n17 n18 n19 n20 - int
+
+        ; all current card supertypes
+        basic legendary ongoing snow world - supertype
+
+        ; all current card types
+        artifact battle conspiracy creature dungeon 
+            enchantment instant land phenomenon plane planeswalker scheme sorcery tribal vanguard - type
+
+        ; space for subtypes
+        dwarf elf human bear plains island swamp mountain forest treefolk warrior - subtype
+
+        ; mana colors
+        white blue red black green colorless snow - color
+
+        ; all current zones
+        library hand battlefield graveyard stack exile command token_zone - zone
+
+        ; space for effect IDs
+        lightning_bolt_1 scorching_shot_1 basic_plains_1 basic_island_1 basic_swamp_1
+            basic_mountain_1 basic_forest_1 marble_chalice_1 - effect
+
+        ; space for card names
+        lightning_bolt grizzly_bears scorching_shot bear_token basic_plains basic_island basic_swamp 
+            basic_mountain basic_forest old_ghastbark marble_chalice - card_name
+    )
+
+    (:predicates
+        ; integer manipulation
+        (sub ?value1 - int ?value2 - int ?value3 - int) ; if value2 > value1: value3 = 0
+        (sub0 ?value1 - int ?value2 - int ?value3 - int) ;if value2 > value1: does not exist
+        (add ?value1 - int ?value2 - int ?value3 - int)
+        (geq ?value1 - int ?value2 - int)
+
+
+        ; define zone of card
+        (zone ?card - card ?zone - zone)
+
+
+        ; base values of a card
+        (base_power ?card - card ?value - int)
+        (base_toughness ?card - card ?value - int)
+        (base_rules_text ?card - card ?effect - effect)
+        (base_supertype ?card - card ?supertype - supertype)
+        (base_type ?card - card ?type - type)
+        (base_subtype ?card - card ?subtype - subtype)
+        (base_card_name ?card - card ?card_name - card_name)
+        (base_card_parts_count ?card - card ?value - int)
+
+        (base_mana_cost_color ?card - card ?color - color ?value - int)
+        (base_mana_cost_phyrexian ?card - card ?color - color ?value - int)
+        (base_mana_cost_phyrexian_hybrid ?card - card ?color1 - color ?color2 - color ?value - int)
+        (base_mana_cost_hybrid ?card - card ?color1 - color ?color2 - color ?value - int)
+        (base_mana_cost_hybrid_mono ?card - card ?color - color ?value - int)
+        (base_mana_cost_generic ?card - card ?value - int)
+        (base_card_mana_count ?card - card ?value - int)
+
+
+        ; parts of a card
+        (power ?card - card ?value - int)
+        (toughness ?card - card ?value - int)
+        (rules_text ?card - card ?effect - effect)
+        (supertype ?card - card ?supertype - supertype)
+        (type ?card - card ?type - type)
+        (subtype ?card - card ?subtype - subtype)
+        (card_name ?card - card ?card_name - card_name)
+        (card_parts_count ?card - card ?value - int)
+
+        (mana_cost_color ?card - card ?color - color ?value - int)
+        (mana_cost_phyrexian ?card - card ?color - color ?value - int)
+        (mana_cost_phyrexian_hybrid ?card - card ?color1 - color ?color2 - color ?value - int)
+        (mana_cost_hybrid ?card - card ?color1 - color ?color2 - color ?value - int)
+        (mana_cost_hybrid_mono ?card - card ?color - color ?value - int)
+        (mana_cost_generic ?card - card ?value - int)
+        (card_mana_count ?card - card ?value - int)
+
+
+        ; physical states of a card
+        (untapped ?card - card)
+        (tapped ?card - card)
+        (unflipped ?card - card)
+        (flipped ?card - card)
+        (face_up ?card - card)
+        (face_down ?card - card)
+        (phased_in ?card - card)
+        (phased_out ?card - card)
+
+
+        ; predicates for mana system
+        (mana_pool ?player - player ?color - color ?value - int)
+        (mana_payment ?card - card ?color - color ?value - int)
+        (mana_payment_generic ?card - card ?value - int)
+        (life_payment ?card - card ?value - int)
+
+
+        ; combat predicates
+        (attacking ?card - card)
+        (attacking_player ?card - card ?player - player)
+        (attacking_planeswalker ?card - card ?target - card)
+        (creature_damage ?card - card ?value - int)
+        (entered_this_turn ?card - int)
+
+
+        ; player related predicates
+        (control ?card - card ?player - player)
+        (owner ?card - card ?player - player)
+        (active_player ?player - player)
+        (priority ?player - player)
+        (life_total ?player - player ?value - int)
+        (lost_game ?player - player)
+
+
+        ; stack predicates
+        (head ?index - int)
+        (effect_stack ?index - int ?effectID - effect)
+        (card_stack ?index - int ?card - card)
+        (control_stack ?index - int ?player - player)
+        (spell_stack ?index - int) ; object on stack is a spell
+        (ability_stack ?index - int) ; object on stack is an ability
+        (target_card ?index - int ?target - card)
+        (invalid_target_card ?index - int ?target - card)
+        (target_player ?index - int ?target - player)
+        (target_color ?index - int ?target - color)
+        
+
+        ; flags for different checks
+        (checked_player ?player - player)
+        (checked_card ?card - card)
+        (card_count ?value - int)
+        (zone_count ?zone - zone ?count - count)
+        (player_count ?value - int)
+        (counter ?number - int)
+        (index_counter ?number - int)
+        (token ?card)
+        (land_played)
+        (main_phase_done)
+        (state_based_action)
+
+        ; predicates for linking objects
+        (linked_card ?card1 - card ?card2 - card)
+        (current_card ?card - card)
+        (linked_player ?player1 - player ?player2 - player)
+        (current_player ?player - player)
+    )
+
+    (:task setup_card :parameters (?card - card))
+        (:method setup_card-base
+            :parameters (?card - card)
+            :task (setup_card ?card)
+            :precondition ()
+            :ordered-subtasks (and
+                (change_card_parts_count ?card n0 n0)
+                (set_card_parts ?card)
+                (change_card_mana_count ?card n0 n0)
+                (set_card_mana ?card)
+            )
+        )
+    
+)
